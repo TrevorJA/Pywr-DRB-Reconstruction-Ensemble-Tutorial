@@ -1,19 +1,6 @@
-#!/usr/bin/env python3
 """
 Zenodo Download Script
-Downloads all files from https://zenodo.org/records/15101164
-"""
-
-import subprocess
-import requests
-import shutil
-from pathlib import Path
-
-
-#!/usr/bin/env python3
-"""
-Zenodo Download Script with selective file download
-Downloads specific file(s) from https://zenodo.org/records/15101164
+Downloads files from https://zenodo.org/records/15101164
 """
 
 import subprocess

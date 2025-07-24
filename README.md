@@ -138,9 +138,42 @@ rm -r outputs
 
 #### Calculating marginal catchment inflows
 
+Pywr-DRB requires "catchment inflows" rather than total streamflows—that is, the local runoff contribution from each sub-basin rather than the cumulative flow from all upstream areas. The script `02_calculate_catchment_inflow.py` performs this conversion for each realization individually:
+
+```python
+from pywrdrb.pre.flows import _subtract_upstream_catchment_inflows
+
+inflow_ensemble = {}
+for realization in gage_flow_ensemble:
+    flows_i = gage_flow_ensemble[realization].copy()
+    inflow_ensemble[realization] = _subtract_upstream_catchment_inflows(flows_i)
+```
+
+Where the `_subtract_upstream_catchment_inflows` function iteratively subtracts upstream gage flows from downstream totals, working through the node network to separate the local catchment contribution at each location. The result is a set of catchment inflows that can drive the Pywr-DRB simulation without double-counting upstream flows.
+
 
 #### Predicting inflows at downstream nodes
 
+To simulate realistic operational decisions, Pywr-DRB generates 1-4 day ahead inflow predictions using autoregressive models. The script `03_predict_inflows.py` uses uses the `pywrdrb.pre.PredictedInflowEnsemblePreprocessor()` to generate the ensemble of predicted inflows in parallel using MPI.
+
+
+```python
+from pywrdrb.pre import PredictedInflowEnsemblePreprocessor
+
+# Generate predictions using AR models
+preprocessor = PredictedInflowEnsemblePreprocessor(
+    flow_type=inflow_type,
+    ensemble_hdf5_file=catchment_inflow_filename,
+    realization_ids=realization_ids,
+    use_mpi=True   # Uses MPI to parallelize
+)
+
+preprocessor.load()
+preprocessor.process()        
+preprocessor.save()
+```
+
+After running this script, you will notice that a new file (`predicted_inflows_mgd.hdf5`) appears in the `pywrdrb_inputs/` folder. 
 
 
 #### Running the simulation

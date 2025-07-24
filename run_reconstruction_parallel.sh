@@ -17,6 +17,12 @@ np=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 # assume we run the first N realizations
 N_REALIZATIONS=${N_REALIZATIONS:-100}
 
+
+### Download dataset
+echo "Downloading reconstruction ensemble..."
+python 01_download_reconstruction.py
+
+
 ### Calculate catchment inflow
 echo "Calculating catchment inflow for the first $N_REALIZATIONS realizations"
 python 02_calculate_catchment_inflow.py $N_REALIZATIONS
